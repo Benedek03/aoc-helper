@@ -1,100 +1,73 @@
-use clap::{Parser, Subcommand};
-use directories::ProjectDirs;
-use serde::Deserialize;
-use std::{fs, path::PathBuf};
+mod config;
+use config::*;
+mod args;
+use args::*;
+use clap::Parser;
+use reqwest::{
+    header::{HeaderMap, HeaderValue, CONTENT_TYPE, COOKIE},
+    redirect::Policy,
+    Client,
+};
+use std::io::Write;
+use std::{
+    fs::{self, File},
+    path::PathBuf,
+};
 
-#[derive(Deserialize, Debug)]
-struct Config {
-    session_id: String,
-    root_dir: PathBuf,
+async fn download(client: Client, url: String, path: PathBuf) {
+    let a = client.get(url).send().await.unwrap().text().await.unwrap();
+    println!("{:?}", path);
+    let mut output = File::create(path).unwrap();
+    write!(output, "{}", a).unwrap();
 }
 
-#[derive(Parser)]
-#[command(author, version, about, long_about = None)]
-struct Cli {
-    #[arg(short, long, default_value_t = 2021)]
-    year: i32,
-
-    #[arg(short, long, default_value_t = 1)]
-    day: i32,
-
-    #[command(subcommand)]
-    command: Option<Commands>,
-}
-
-#[derive(Subcommand)]
-enum Commands {
-    Fetch,
-    Submit,
-}
-
-async fn d(){
-    let target = "https://raw.githubusercontent.com/Benedek03/aoc/main/README.md";
-    let response = reqwest::get(target).await;
-    match response {
-        Ok(r) => println!()
-    }
-    dbg!(response);
-}
-
-fn main() {
-    let proj_dirs = ProjectDirs::from("dev", "Benedek03", "aoc-helper").unwrap();
-    let config_dir = proj_dirs.config_dir();
-    let config_file = fs::read_to_string(config_dir.join("config.toml"));
-    let config: Config = match config_file {
-        Ok(file) => {
-            let a: Result<Config, toml::de::Error> = toml::from_str(&file);
-            match a {
-                Ok(c) => {
-                    if ! c.root_dir.is_dir() {
-                        println!("config issue:");
-                        println!("root_dir must be a dir");
-                        std::process::exit(1);
-                    }
-                    c
-                },
-                Err(_) => {
-                    println!("config issue");
-                    std::process::exit(1);
-                }
-            }
-        }
-        Err(_) => {
-            println!(
-r#"——————————No config?——————————
-⣞⢽⢪⢣⢣⢣⢫⡺⡵⣝⡮⣗⢷⢽⢽⢽⣮⡷⡽⣜⣜⢮⢺⣜⢷⢽⢝⡽⣝
-⠸⡸⠜⠕⠕⠁⢁⢇⢏⢽⢺⣪⡳⡝⣎⣏⢯⢞⡿⣟⣷⣳⢯⡷⣽⢽⢯⣳⣫⠇
-⠀⠀⢀⢀⢄⢬⢪⡪⡎⣆⡈⠚⠜⠕⠇⠗⠝⢕⢯⢫⣞⣯⣿⣻⡽⣏⢗⣗⠏⠀
-⠀⠪⡪⡪⣪⢪⢺⢸⢢⢓⢆⢤⢀⠀⠀⠀⠀⠈⢊⢞⡾⣿⡯⣏⢮⠷⠁⠀⠀
-⠀⠀⠀⠈⠊⠆⡃⠕⢕⢇⢇⢇⢇⢇⢏⢎⢎⢆⢄⠀⢑⣽⣿⢝⠲⠉⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⡿⠂⠠⠀⡇⢇⠕⢈⣀⠀⠁⠡⠣⡣⡫⣂⣿⠯⢪⠰⠂⠀⠀⠀⠀
-⠀⠀⠀⠀⡦⡙⡂⢀⢤⢣⠣⡈⣾⡃⠠⠄⠀⡄⢱⣌⣶⢏⢊⠂⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⢝⡲⣜⡮⡏⢎⢌⢂⠙⠢⠐⢀⢘⢵⣽⣿⡿⠁⠁⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠨⣺⡺⡕⡕⡱⡑⡆⡕⡅⡕⡜⡼⢽⡻⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⣼⣳⣫⣾⣵⣗⡵⡱⡡⢣⢑⢕⢜⢕⡝⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⣴⣿⣾⣿⣿⣿⡿⡽⡑⢌⠪⡢⡣⣣⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⡟⡾⣿⢿⢿⢵⣽⣾⣼⣘⢸⢸⣞⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠁⠇⠡⠩⡫⢿⣝⡻⡮⣒⢽⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-——————————————————————————————"#
-            );
-            std::process::exit(1);
-        }
-    };
-
+#[tokio::main]
+async fn main() {
+    let config = Config::parse();
     let cli = Cli::parse();
-    // You can check for the existence of subcommands, and if found use their
-    // matches just as you would the top level cmd
+
+   
+
     match &cli.command {
         Some(Commands::Fetch) => {
-            todo!();
+            let cookie_header = HeaderValue::from_str(&format!("session={}", config.session)).unwrap();
+            let content_type_header = HeaderValue::from_str("text/plain").unwrap();
+            let mut headers = HeaderMap::new();
+            headers.insert(COOKIE, cookie_header);
+            headers.insert(CONTENT_TYPE, content_type_header);
+            let client = Client::builder()
+                .default_headers(headers)
+                .redirect(Policy::none())
+                .build()
+                .unwrap();
+
+            let url = format!(
+                "https://adventofcode.com/{}/day/{}/input",
+                cli.year, cli.day
+            );
+
+            let dir = config
+                .root_dir
+                .join(format!("{}/day{}/", cli.year, cli.day));
+            if !dir.is_dir() {
+                fs::create_dir_all(&dir);
+            }
+            
+            download(client, url, dir.join("input.txt")).await;
         }
         Some(Commands::Submit) => {
             todo!();
         }
-        None =>  {
-            println!("none");
-            d();
+        Some(Commands::Open) => {
+            let url = format!(
+                "https://adventofcode.com/{}/day/{}",
+                cli.year, cli.day
+            );
+            webbrowser::open(&url);
+            todo!()
+        }
+        None => {
+            todo!();
         }
     }
-
 }
