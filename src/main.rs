@@ -26,8 +26,6 @@ async fn main() {
     let config = Config::parse();
     let cli = Cli::parse();
 
-   
-
     match &cli.command {
         Some(Commands::Fetch) => {
             let cookie_header = HeaderValue::from_str(&format!("session={}", config.session)).unwrap();

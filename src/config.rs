@@ -1,4 +1,4 @@
-use std::{path::PathBuf, fs};
+use std::{fs, path::PathBuf};
 
 use directories::ProjectDirs;
 use serde::Deserialize;
@@ -18,16 +18,18 @@ impl Config {
             Ok(file) => {
                 let a: Result<Config, toml::de::Error> = toml::from_str(&file);
                 match a {
-                    Ok(c) => {
-                        if !c.root_dir.is_dir() {
+                    Ok(config) => {
+                        if !config.root_dir.is_dir() {
                             println!("config issue:");
                             println!("root_dir must be a dir");
                             std::process::exit(1);
                         }
-                        c
+                        config
                     }
-                    Err(_) => {
-                        println!("config issue");
+                    Err(error) => {
+                        println!("config issue:");
+                        println!("there was an error while parsing config.toml:");
+                        println!("{}", error);
                         std::process::exit(1);
                     }
                 }
@@ -48,7 +50,9 @@ impl Config {
 ⠀⠀⠀⣴⣿⣾⣿⣿⣿⡿⡽⡑⢌⠪⡢⡣⣣⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⡟⡾⣿⢿⢿⢵⣽⣾⣼⣘⢸⢸⣞⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠁⠇⠡⠩⡫⢿⣝⡻⡮⣒⢽⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-——————————————————————————————"#
+——————————————————————————————
+create {:?}"#,
+                    config_dir.join("config.toml")
                 );
                 std::process::exit(1);
             }
