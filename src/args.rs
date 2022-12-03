@@ -1,7 +1,6 @@
-use std::ops::RangeInclusive;
-
 use chrono::{DateTime, Datelike, FixedOffset, TimeZone, Utc};
 use clap::{Parser, Subcommand};
+use std::ops::RangeInclusive;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -18,8 +17,11 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
+    /// downloads input
     Fetch,
+    /// submits an answer TODO
     Submit,
+    /// opens the latest puzzle in the default browser
     Open,
 }
 
@@ -63,7 +65,7 @@ fn last_day() -> u32 {
 }
 
 fn day_in_range(s: &str) -> Result<u32, String> {
-    let day_range: RangeInclusive<u32> = 1..=last_day();
+    let day_range: RangeInclusive<u32> = 1..=25;
     let day: u32 = s
         .parse()
         .map_err(|_| format!("`{}` isn't a number", s))
@@ -76,5 +78,13 @@ fn day_in_range(s: &str) -> Result<u32, String> {
             day_range.start(),
             day_range.end()
         ))
+    }
+}
+
+pub fn doublecheck_day(cli: &Cli) {
+    let ld = last_day();
+    if cli.year == last_year() && cli.day > ld {
+        println!("Not so fast bro, you only have to sleep {} time(s) untill this day.", cli.day -ld);
+        std::process::exit(1);
     }
 }

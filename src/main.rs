@@ -25,10 +25,12 @@ async fn download(client: Client, url: String, path: PathBuf) {
 async fn main() {
     let config = Config::parse();
     let cli = Cli::parse();
+    doublecheck_day(&cli);
 
     match &cli.command {
         Some(Commands::Fetch) => {
-            let cookie_header = HeaderValue::from_str(&format!("session={}", config.session)).unwrap();
+            let cookie_header =
+                HeaderValue::from_str(&format!("session={}", config.session)).unwrap();
             let content_type_header = HeaderValue::from_str("text/plain").unwrap();
             let mut headers = HeaderMap::new();
             headers.insert(COOKIE, cookie_header);
@@ -48,21 +50,21 @@ async fn main() {
                 .root_dir
                 .join(format!("{}/day{}/", cli.year, cli.day));
             if !dir.is_dir() {
-                fs::create_dir_all(&dir);
+                match fs::create_dir_all(&dir) {
+                    Ok(()) => download(client, url, dir.join("input.txt")).await,
+                    Err(e) => println!("{}", e),
+                }
             }
-            
-            download(client, url, dir.join("input.txt")).await;
         }
         Some(Commands::Submit) => {
             todo!();
         }
         Some(Commands::Open) => {
-            let url = format!(
-                "https://adventofcode.com/{}/day/{}",
-                cli.year, cli.day
-            );
-            webbrowser::open(&url);
-            todo!()
+            let url = format!("https://adventofcode.com/{}/day/{}", cli.year, cli.day);
+            match webbrowser::open(&url) {
+                Ok(()) => println!("opened https://adventofcode.com/{}/day/{} in the default browser", cli.year, cli.day),
+                Err(e) => println!("{}", e),
+            }
         }
         None => {
             todo!();

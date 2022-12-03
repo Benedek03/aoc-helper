@@ -1,31 +1,36 @@
 # aoc-helper
-aoc-helper `will be` an Advent Of Code helper cli program. aoc-helper makes it easier to download inputs, etc.
+aoc-helper is my Advent Of Code cli helper program.
 
-# The idea
-`~/.config/aoc-helper/aoc-helper.something`
-- cookie
-- path to the root dir of the solutions 
-- default output: /year/day/input.txt
-- default year: latest
-- default day: latest
-<!-- default `/year/day/part(1:2).lang` -->
+# Usage
+Why would you want to do that?
 
-`~/.config/aoc-helper/aoc-helper-data.something`
-- saves which parts are solved
+## install
+you'll figure it out
 
+## create ~/.config/aoc-helper/config.toml
+or these on macos and windows but I didn't and won't test them
+`$HOME/Library/Application Support/dev.Benedek03.aoc-helper`
+`{FOLDERID_RoamingAppData}\Benedek03\aoc-helper\config`
+config.toml must contain:
 ```
-aoc-helper fetch [-d --day <day>] [-y --year <year>] [-c --cookie <path >] [-o --output <file path>]
+session="<your session cookie>"
+root_dir="<the path to your solutions>"
 ```
-downloads input
+aoc-helper will create `<year>/<day>/` subdirectories in root_dir and save your inputs there. 
+
+## aoc-helper help
 ```
-aoc-helper submit [-d --day <day>] [-y --year <year>] <part> <[-a --answer <answer>] [-c -code <path to source code>]>
+Usage: aoc-helper [OPTIONS] [COMMAND]
+
+Commands:
+  fetch   downloads input
+  submit  submits an answer TODO
+  open    opens the latest puzzle in the default browser
+  help    Print this message or the help of the given subcommand(s)
+
+Options:
+  -y, --year <YEAR>  [default: latest]
+  -d, --day <DAY>    [default: latest]
+  -h, --help         Print help information
+  -V, --version      Print version information
 ```
-submits the answer or the stdout of the code ran with the input
-```
-aoc-helper run <path to source code>
-```
-compiles and runs the program with the input 
-```
-aoc-helper open [-d --day <day>] [-y --year <year>] 
-```
-opens the task 
