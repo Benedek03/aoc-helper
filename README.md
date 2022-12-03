@@ -9,8 +9,11 @@ you'll figure it out
 
 ## create ~/.config/aoc-helper/config.toml
 or these on macos and windows but I didn't and won't test them
+
 `$HOME/Library/Application Support/dev.Benedek03.aoc-helper`
+
 `{FOLDERID_RoamingAppData}\Benedek03\aoc-helper\config`
+
 config.toml must contain:
 ```
 session="<your session cookie>"
